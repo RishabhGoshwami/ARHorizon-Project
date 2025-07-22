@@ -2,10 +2,9 @@ const ARViewer = () => {
   return (
     <div className="h-screen bg-black flex items-center justify-center">
       <iframe
-        title="AR Content"
-        src="https://example-ar-simulation.com" // Replace with real AR content or Three.js demo
-        className="w-[90%] h-[80%] border-2 border-white rounded-xl"
-        allowFullScreen
+        src="https://threejs.org/examples/#webgl_animation_skinning_morph"
+        title="AR Simulation"
+        className="w-full md:w-[600px] h-[400px] mb-6 border-2 border-white rounded-xl"
       />
     </div>
   );
