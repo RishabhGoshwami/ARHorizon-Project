@@ -1,9 +1,14 @@
+import QRCode from 'react-qr-code';
+
 const QRCodeSection = () => {
+  const qrValue = `${window.location.origin}/ar`;
+
   return (
-    <div className="text-center mt-8">
-      <h3 className="text-xl font-semibold mb-4">📸 Scan the QR Code Below</h3>
-      <img src="/qrcode.png" alt="QR Code" className="mx-auto w-44" />
-      <p className="mt-3 text-gray-600">Scan using your phone to explore AR content.</p>
+    <div className="flex flex-col items-center mb-8">
+      <p className="mb-2 text-lg text-gray-700">Scan the QR Code below:</p>
+      <div className="bg-white p-4 rounded shadow-md">
+        <QRCode value={qrValue} size={160} />
+      </div>
     </div>
   );
 };
