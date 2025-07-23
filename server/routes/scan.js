@@ -1,49 +1,41 @@
-const express = require('express');
+import express from "express";
+import Scan from "../models/Scan.js";
+
 const router = express.Router();
-const ScanEvent = require('../models/ScanEvent');
-const geoip = require('geoip-lite');
-const useragent = require('express-useragent');
 
-// Middleware to extract user-agent
-router.use(useragent.express());
-
-// 🔄 Route to log a scan event
-router.post('/log', async (req, res) => {
+// POST /api/scan — Logs scan start
+router.post("/", async (req, res) => {
   try {
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const geo = geoip.lookup(ip);
-    const location = geo ? `${geo.city}, ${geo.country}` : 'Unknown';
-    const userAgent = req.useragent.source;
+    const { userAgent, location } = req.body;
+    const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
-    const newScan = new ScanEvent({
-      location,
-      userAgent,
-    });
-
+    // Create scan with no timeSpent initially
+    const newScan = new Scan({ userAgent, location, ip });
     await newScan.save();
-    res.status(200).json({ success: true, message: 'Scan event logged' });
+
+    res.status(201).json({ message: "Scan started", id: newScan._id });
   } catch (error) {
-    console.error('Error logging scan:', error);
-    res.status(500).json({ success: false, error: 'Server Error' });
+    console.error("Scan start error:", error);
+    res.status(500).json({ error: "Failed to log scan" });
   }
 });
 
-// 📊 Route to fetch analytics
-router.get('/analytics', async (req, res) => {
+// POST /api/scan/end — Updates scan with timeSpent
+router.post("/end", async (req, res) => {
   try {
-    const totalScans = await ScanEvent.countDocuments();
-    const uniqueUserAgents = await ScanEvent.distinct('userAgent');
-    const avgTime = 12; // ⏱️ Dummy data: e.g. average 12 seconds
+    const { id, timeSpent } = req.body;
 
-    res.json({
-      totalScans,
-      uniqueUsers: uniqueUserAgents.length,
-      avgTimeSpent: avgTime,
-    });
+    if (!id || !timeSpent) {
+      return res.status(400).json({ error: "id and timeSpent required" });
+    }
+
+    await Scan.findByIdAndUpdate(id, { timeSpent });
+
+    res.status(200).json({ message: "Scan updated with timeSpent" });
   } catch (error) {
-    console.error('Analytics error:', error);
-    res.status(500).json({ success: false, error: 'Server Error' });
+    console.error("Scan end error:", error);
+    res.status(500).json({ error: "Failed to update scan" });
   }
 });
 
-module.exports = router;
+export default router;
